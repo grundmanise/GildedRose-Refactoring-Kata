@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Gilded Rose kata in TypeScript",
   "scripts": {
-    "compile": "tsc",
+    "compile": "tsc -p ./tsconfig.build.json",
     "test:jest": "jest",
     "test:jest:watch": "jest --watchAll"
   },
