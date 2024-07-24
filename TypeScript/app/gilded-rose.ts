@@ -1,3 +1,10 @@
+enum ItemName {
+  SULFURAS = "Sulfuras, Hand of Ragnaros",
+  AGED_BRIE = "Aged Brie",
+  BACKSTAGE_PASSES = "Backstage passes to a TAFKAL80ETC concert",
+  CONJURED_MANA_CAKE = "Conjured Mana Cake",
+}
+
 export class Item {
   name: string;
   sellIn: number;
@@ -23,7 +30,7 @@ export class GildedRose {
 
   public updateQuality() {
     this.items.forEach((item) => {
-      if (item.name === "Sulfuras, Hand of Ragnaros") {
+      if (item.name === ItemName.SULFURAS) {
         // noop
         return;
       }
@@ -39,12 +46,18 @@ export class GildedRose {
   }
 
   private updateItemQuality(item: Item) {
-    if (item.name === "Aged Brie") {
-      this.updateAgedBrieQuality(item);
-    } else if (item.name === "Backstage passes to a TAFKAL80ETC concert") {
-      this.updateBackstagePassesQuality(item);
-    } else {
-      this.updateStandardItemQuality(item);
+    switch (item.name) {
+      case ItemName.AGED_BRIE:
+        this.updateAgedBrieQuality(item);
+        break;
+      case ItemName.BACKSTAGE_PASSES:
+        this.updateBackstagePassesQuality(item);
+        break;
+      case ItemName.CONJURED_MANA_CAKE:
+        this.updateConjuredManaCakeQuality(item);
+        break;
+      default:
+        this.updateStandardItemQuality(item);
     }
   }
 
@@ -75,6 +88,11 @@ export class GildedRose {
 
   private updateStandardItemQuality(item: Item) {
     const qualityChange = GildedRose.isItemExpired(item) ? -2 : -1;
+    this.updateItemQualityBy(item, qualityChange);
+  }
+
+  private updateConjuredManaCakeQuality(item: Item) {
+    const qualityChange = GildedRose.isItemExpired(item) ? -4 : -2;
     this.updateItemQualityBy(item, qualityChange);
   }
 }
