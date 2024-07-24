@@ -11,59 +11,70 @@ export class Item {
 }
 
 export class GildedRose {
-  items: Array<Item>;
+  private static isItemExpired(item: Item) {
+    return item.sellIn <= 0;
+  }
 
-  constructor(items = [] as Array<Item>) {
+  public items: Array<Item>;
+
+  public constructor(items: Array<Item>) {
     this.items = items;
   }
 
-  updateQuality() {
-    for (let i = 0; i < this.items.length; i++) {
-      if (this.items[i].name != 'Aged Brie' && this.items[i].name != 'Backstage passes to a TAFKAL80ETC concert') {
-        if (this.items[i].quality > 0) {
-          if (this.items[i].name != 'Sulfuras, Hand of Ragnaros') {
-            this.items[i].quality = this.items[i].quality - 1
-          }
-        }
-      } else {
-        if (this.items[i].quality < 50) {
-          this.items[i].quality = this.items[i].quality + 1
-          if (this.items[i].name == 'Backstage passes to a TAFKAL80ETC concert') {
-            if (this.items[i].sellIn < 11) {
-              if (this.items[i].quality < 50) {
-                this.items[i].quality = this.items[i].quality + 1
-              }
-            }
-            if (this.items[i].sellIn < 6) {
-              if (this.items[i].quality < 50) {
-                this.items[i].quality = this.items[i].quality + 1
-              }
-            }
-          }
-        }
+  public updateQuality() {
+    this.items.forEach((item) => {
+      if (item.name === "Sulfuras, Hand of Ragnaros") {
+        // noop
+        return;
       }
-      if (this.items[i].name != 'Sulfuras, Hand of Ragnaros') {
-        this.items[i].sellIn = this.items[i].sellIn - 1;
-      }
-      if (this.items[i].sellIn < 0) {
-        if (this.items[i].name != 'Aged Brie') {
-          if (this.items[i].name != 'Backstage passes to a TAFKAL80ETC concert') {
-            if (this.items[i].quality > 0) {
-              if (this.items[i].name != 'Sulfuras, Hand of Ragnaros') {
-                this.items[i].quality = this.items[i].quality - 1
-              }
-            }
-          } else {
-            this.items[i].quality = this.items[i].quality - this.items[i].quality
-          }
-        } else {
-          if (this.items[i].quality < 50) {
-            this.items[i].quality = this.items[i].quality + 1
-          }
-        }
-      }
-    }
+      this.updateItemQuality(item);
+      this.decreaseItemSellIn(item);
+    });
 
     return this.items;
+  }
+
+  private decreaseItemSellIn(item: Item) {
+    item.sellIn -= 1;
+  }
+
+  private updateItemQuality(item: Item) {
+    if (item.name === "Aged Brie") {
+      this.updateAgedBrieQuality(item);
+    } else if (item.name === "Backstage passes to a TAFKAL80ETC concert") {
+      this.updateBackstagePassesQuality(item);
+    } else {
+      this.updateStandardItemQuality(item);
+    }
+  }
+
+  private updateItemQualityBy(item: Item, qualityChange: number) {
+    item.quality = Math.max(Math.min(item.quality + qualityChange, 50), 0);
+  }
+
+  private updateAgedBrieQuality(item: Item) {
+    const qualityChange = GildedRose.isItemExpired(item) ? +2 : +1;
+    this.updateItemQualityBy(item, qualityChange);
+  }
+
+  private updateBackstagePassesQuality(item: Item) {
+    const qualityChange = (() => {
+      if (GildedRose.isItemExpired(item)) {
+        return -item.quality; // drop quality to 0
+      }
+      if (item.sellIn <= 5) {
+        return +3;
+      }
+      if (item.sellIn <= 10) {
+        return +2;
+      }
+      return +1;
+    })();
+    this.updateItemQualityBy(item, qualityChange);
+  }
+
+  private updateStandardItemQuality(item: Item) {
+    const qualityChange = GildedRose.isItemExpired(item) ? -2 : -1;
+    this.updateItemQualityBy(item, qualityChange);
   }
 }
